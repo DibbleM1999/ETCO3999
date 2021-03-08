@@ -21,9 +21,11 @@ void main(void) {
   pal_col(3,0x30);	// white
 
   // write text to name table
-  vram_adr(NTADR_A(2,2));		// set address
-  vram_write("This is", 7);	// write bytes to video RAM
+  vram_adr(NTADR_A(1,1));		// set address
+  vram_write("This is", 7);
+  vram_adr(NTADR_A(1,2));       // write bytes to video RAM
   vram_write("Mike Dibble's", 13);
+  vram_adr(NTADR_A(1,3));
   vram_write("first NES 'Game'!", 17);
   // enable PPU rendering (turn on screen)
   ppu_on_all();
