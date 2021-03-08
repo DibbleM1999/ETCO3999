@@ -7,13 +7,30 @@ Finally, turn on the PPU to display video.
 */
 
 #include "neslib.h"
-
+#define TILE 0xd8
+#define TILE_D 0xc4
+#define ATTR 0
+#define ATTRN 0x40
 // link the pattern table into CHR ROM
 //#link "chr_generic.s"
-
-// main function, run after console reset
-void main(void) {
-int i;
+const unsigned char metaspriteR[]={
+        0,      0,      TILE+0,   ATTR, 
+        0,      8,      TILE+1,   ATTR, 
+        8,      0,      TILE+2,   ATTR, 
+        8,      8,      TILE+3,   ATTR, 
+        128};
+const unsigned char metaspriteL[]={
+        0,      0,      TILE+2,   ATTRN, 
+        0,      8,      TILE+3,   ATTRN, 
+        8,      0,      TILE+0,   ATTRN, 
+        8,      8,      TILE+1,   ATTRN, 
+        128};
+const unsigned char Door[]={
+        0,      0,      TILE_D+0,   ATTR, 
+        0,      8,      TILE_D+1,   ATTR, 
+        8,      0,      TILE_D+2,   ATTR, 
+        8,      8,      TILE_D+3,   ATTR, 
+        128};
 const char PALETTE[32] =
 {
 0x03, // screen color
@@ -25,6 +42,15 @@ const char PALETTE[32] =
 0x36, 0x21, 0x19, 0x0, // sprite palette 2
 0x1d, 0x37, 0x2b, // sprite palette 3
 };
+// main function, run after console reset
+void main(void) {
+#define TILE 0xd8
+#define ATTR 0
+int i;
+int x = 1;
+int y = 160;
+int dir = 1;
+
 pal_all(PALETTE);
 
   // set palette colors
@@ -52,6 +78,8 @@ pal_all(PALETTE);
     vram_adr(NTADR_A(i,151));
     vram_put(0xC0);
   }
+  //vrambuf_clear();
+  //set_vram_update(updbuf); 
   ppu_on_all();
 
   // infinite loop
@@ -59,6 +87,27 @@ pal_all(PALETTE);
   {
     char cur_oam = 0;
     
-    oam_spr(30,120,0x19,0x0,cur_oam);
+    //oam_spr(x,y,0x19,0x0,cur_oam);
+    
+    x+= dir;
+    if(x>235)
+    {
+      dir = -1;
+    }
+    if(x<5)
+    {
+      cur_oam | 0x40;
+      dir = 1;
+    }
+    if(dir == 1)
+    {
+    	cur_oam = oam_meta_spr(x, y, cur_oam, metaspriteR);
+    }
+    if(dir == -1)
+    {
+    	cur_oam = oam_meta_spr(x, y, cur_oam, metaspriteL);
+    }
+    cur_oam = oam_meta_spr(232, y, cur_oam, Door);
+    ppu_wait_frame();
   }
 }

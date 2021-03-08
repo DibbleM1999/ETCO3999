@@ -396,7 +396,7 @@
 ;/* use block comment to map a subset of data to sprite bitmaps */
 ;/*{w:16,h:16,bpp:1,count:15,brev:1,np:2,pofs:8,remap:[5,0,1,2,4,6,7,8,9,10,11,12]}*/
 .byte $00,$0F,$3F,$3F,$7F,$00,$7F,$7F
-.byte $0F,$30,$4D,$6D,$AD,$FF,$80,$AD
+.byte $0F,$30,$4D,$4D,$AD,$FF,$80,$AD
 .byte $7F,$7F,$7F,$00,$7F,$7F,$7F,$00
 .byte $AD,$AD,$AD,$FF,$80,$AD,$AD,$FF
 .byte $00,$F0,$FC,$FC,$FE,$00,$FE,$FE
