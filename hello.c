@@ -7,6 +7,8 @@ Finally, turn on the PPU to display video.
 */
 
 #include "neslib.h"
+#include "vrambuf.h"
+//#link "vrambuf.c"
 #define TILE 0xd8
 #define TILE_D 0xc4
 #define ATTR 0
@@ -44,8 +46,6 @@ const char PALETTE[32] =
 };
 // main function, run after console reset
 void main(void) {
-#define TILE 0xd8
-#define ATTR 0
 int i;
 int x = 1;
 int y = 160;
@@ -78,8 +78,8 @@ pal_all(PALETTE);
     vram_adr(NTADR_A(i,151));
     vram_put(0xC0);
   }
-  //vrambuf_clear();
-  //set_vram_update(updbuf); 
+  vrambuf_clear();
+  set_vram_update(updbuf); 
   ppu_on_all();
 
   // infinite loop
@@ -99,6 +99,14 @@ pal_all(PALETTE);
       cur_oam | 0x40;
       dir = 1;
     }
+    if(x<240 && x>229)
+    {
+      vrambuf_put(NTADR_A(1, 4), "On The Door!", 13);
+    }
+    else
+    {
+      vrambuf_put(NTADR_A(1, 4), "            ", 13);
+    }
     if(dir == 1)
     {
     	cur_oam = oam_meta_spr(x, y, cur_oam, metaspriteR);
@@ -108,6 +116,6 @@ pal_all(PALETTE);
     	cur_oam = oam_meta_spr(x, y, cur_oam, metaspriteL);
     }
     cur_oam = oam_meta_spr(232, y, cur_oam, Door);
-    ppu_wait_frame();
+    vrambuf_flush();
   }
 }
