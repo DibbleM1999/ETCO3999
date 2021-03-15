@@ -49,6 +49,7 @@ void main(void) {
 int i;
 int x = 1;
 int y = 160;
+int play_y = 160;
 int dir = 1;
 
 pal_all(PALETTE);
@@ -86,10 +87,31 @@ pal_all(PALETTE);
   while (1) 
   {
     char cur_oam = 0;
+    char pad_result = pad_poll(0);
     
     //oam_spr(x,y,0x19,0x0,cur_oam);
-    
-    x+= dir;
+    if(pad_result & 0x40)
+    {
+      	dir = -1;
+   	x+= dir;
+    }
+    else if(pad_result & 0x80)
+    {
+      	cur_oam | 0x40;
+      	dir = 1;
+   	x+= dir;
+    }
+    else if(pad_result & 0x20)
+    {
+      	dir = 1;
+   	play_y+= dir;
+    }
+    else if(pad_result & 0x10)
+    {
+      	dir = -1;
+   	play_y+= dir;
+    }
+    /*
     if(x>235)
     {
       dir = -1;
@@ -99,6 +121,7 @@ pal_all(PALETTE);
       cur_oam | 0x40;
       dir = 1;
     }
+    */
     if(x<240 && x>229)
     {
       vrambuf_put(NTADR_A(1, 4), "On The Door!", 13);
@@ -109,11 +132,13 @@ pal_all(PALETTE);
     }
     if(dir == 1)
     {
-    	cur_oam = oam_meta_spr(x, y, cur_oam, metaspriteR);
+    	cur_oam = oam_meta_spr(x, play_y, cur_oam, metaspriteR);
+      	cur_oam = oam_meta_spr(x, play_y, cur_oam, Door);
     }
     if(dir == -1)
     {
-    	cur_oam = oam_meta_spr(x, y, cur_oam, metaspriteL);
+    	cur_oam = oam_meta_spr(x, play_y, cur_oam, metaspriteL);
+      	cur_oam = oam_meta_spr(x, play_y, cur_oam, Door);
     }
     cur_oam = oam_meta_spr(232, y, cur_oam, Door);
     vrambuf_flush();
