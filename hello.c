@@ -146,6 +146,7 @@ pal_all(PALETTE);
     char cur_oam = 0;
     char pad_result = pad_poll(0);
     
+    cur_oam = oam_spr(1, 22,0xA0,0x00, cur_oam);
     //oam_spr(x,y,0x19,0x0,cur_oam);
     if(pad_result & 0x40)
     {
@@ -206,8 +207,9 @@ pal_all(PALETTE);
     }
     //cur_oam = oam_meta_spr(232, y, cur_oam, Door);
     //cam_x++;
-    scroll(cam_x,cam_y);
-    ppu_wait_frame();
+    split(cam_x,cam_y);
+    //scroll(cam_x,cam_y);
+    //ppu_wait_frame();
     //vrambuf_flush();
   }
 }
