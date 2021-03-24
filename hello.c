@@ -112,6 +112,9 @@ int play_y = 160;
 int dir = 1;
 int cam_x = 0;
 int cam_y = 0;
+int enem_x = 400;
+int enem_y = 110;
+int enem_dir = 1;
 
 pal_all(PALETTE);
 
@@ -187,8 +190,13 @@ pal_all(PALETTE);
     {
       if( cam_x>256)
         cam_x = 256;
-      if( x > 100)
+      	pal_bright(4);
+      if( x > 200)
         cam_x++;
+      if(x >200)
+      	pal_bright(0);
+      if(x + cam_x >300)
+      	pal_bright(4);
       if( x > 232)
         x = 232;
     	cur_oam = oam_meta_spr(x, play_y, cur_oam, metaspriteR);
@@ -198,15 +206,41 @@ pal_all(PALETTE);
     {
       if( cam_x<0)
         cam_x = 0;
+      	pal_bright(4);
       if( x<100)
         cam_x--;
+      if(x - cam_x >140)
+      	pal_bright(0);
+      if(cam_x >35)
+        pal_bright(4);
       if( x < 8)
         x = 8;
     	cur_oam = oam_meta_spr(x, play_y, cur_oam, metaspriteL);
       	cur_oam = oam_meta_spr(x, play_y, cur_oam, Door);
     }
+    
+    if(enem_dir == 1){
+      	enem_x+= enem_dir;
+      	if(enem_x >425){
+          enem_dir = -1;
+        }
+      if(enem_x- cam_x >= 0&& enem_x- cam_x<256){
+    	cur_oam = oam_meta_spr(enem_x- cam_x, enem_y, cur_oam, metaspriteR);
+      }
+    }
+    if(enem_dir == -1){
+      	enem_x+= enem_dir;
+      	if(enem_x <375){
+          enem_dir = 1;
+        }
+      	if(enem_x- cam_x >= 0&& enem_x- cam_x<256){
+    	cur_oam = oam_meta_spr(enem_x - cam_x, enem_y, cur_oam, metaspriteL);
+        }
+    }
+    
     //cur_oam = oam_meta_spr(232, y, cur_oam, Door);
     //cam_x++;
+    oam_hide_rest(cur_oam);
     split(cam_x,cam_y);
     //scroll(cam_x,cam_y);
     //ppu_wait_frame();
