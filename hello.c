@@ -9,14 +9,19 @@ Finally, turn on the PPU to display video.
 #include "neslib.h"
 #include "vrambuf.h"
 #include "apu.h"
+#include "title.h"
 //#link "apu.c"
 //#link "vrambuf.c"
+#define FP_BITS  4
+#include "title.h"
+
 #define TILE 0xd8
 #define TILE_D 0xc4
 #define ATTR 0
 #define ATTRN 0x40
 #define NOTE_TABLE note_table_49
 #define BASS_NOTE 36
+#define SFX_START    0
 
 
 // link the pattern table into CHR ROM
@@ -125,11 +130,98 @@ const char PALETTE[32] =
 0x36, 0x21, 0x19, 0x0, // sprite palette 2
 0x1d, 0x37, 0x2b, // sprite palette 3
 };
+const unsigned char palTitle[16]={ 0x0f,0x0f,0x0f,0x0f,0x0f,0x1c,0x2c,0x3c,0x0f,0x12,0x22,0x32,0x0f,0x14,0x24,0x34 };
 byte music_index = 0;
 byte cur_duration = 0;
 
 const byte music1[]; // music data -- see end of file
 const byte* music_ptr = music1;
+static unsigned char wait;
+static int iy,dy;
+static unsigned char bright;
+static unsigned char frame_cnt;
+static unsigned char k;
+void pal_fade_to(unsigned to)
+{
+  //if(!to) music_stop();
+
+  while(bright!=to)
+  {
+    delay(4);
+    if(bright<to) ++bright; else --bright;
+    pal_bright(bright);
+  }
+
+  if(!bright)
+  {
+    ppu_off();
+    set_vram_update(NULL);
+    scroll(0,0);
+  }
+}
+
+void title_screen(void)
+{
+  scroll(-8,240);//title is aligned to the color attributes, so shift it a bit to the right
+
+  vram_adr(NAMETABLE_A);
+  vram_unrle(title);
+
+  vram_adr(NAMETABLE_C);//clear second nametable, as it is visible in the jumping effect
+  vram_fill(0,1024);
+
+  pal_bg(palTitle);
+  pal_bright(4);
+  ppu_on_bg();
+  delay(20);//delay just to make it look better
+
+  iy=240<<FP_BITS;
+  dy=-8<<FP_BITS;
+  frame_cnt=0;
+  wait=160;
+  bright=4;
+
+  while(1)
+  {
+    ppu_wait_frame();
+
+    scroll(-8,iy>>FP_BITS);
+
+    if(pad_trigger(0)&PAD_START) break;
+
+    iy+=dy;
+
+    if(iy<0)
+    {
+      iy=0;
+      dy=-dy>>1;
+    }
+
+    if(dy>(-8<<FP_BITS)) dy-=2;
+
+    if(wait)
+    {
+      --wait;
+    }
+    else
+    {
+      pal_col(2,(frame_cnt&32)?0x0f:0x20);//blinking press start text
+      ++frame_cnt;
+    }
+  }
+
+  scroll(-8,0);//if start is pressed, show the title at whole
+  sfx_play(SFX_START,0);
+
+  for(k=0;k<16;++k)//and blink the text faster
+  {
+    pal_col(2,k&1?0x0f:0x20);
+    delay(4);
+  }
+
+  pal_fade_to(0);
+}
+
 byte next_music_byte() {
   return *music_ptr++;
 }
@@ -223,11 +315,12 @@ pal_all(PALETTE);
   // infinite loop
   while (1) 
   {
-    
+    //title_screen();
     char cur_oam = 0;
     char pad_result = pad_poll(0);
     
     cur_oam = oam_spr(1, 22,0xA0,0x00, cur_oam);
+    title_screen();
     //cur_oam = oam_meta_spr(450, 115, cur_oam, Door);
     //oam_spr(x,y,0x19,0x0,cur_oam);
     if(pad_result & 0x40)
