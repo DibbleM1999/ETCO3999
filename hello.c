@@ -412,10 +412,18 @@ pal_all(PALETTE);
           cur_oam = oam_meta_spr(480-cam_x, 115, cur_oam, Door);
         }
     }
+    if(play_y == 115 && x==enem_x- cam_x)
+    {
+      health--;
+    }
     if(play_y == 115 && x==480-cam_x)
     {
-      vram_adr(NTADR_A(50,50));		// set address
-      vram_write("YOU WIN",7);
+      //vram_adr(NTADR_A(50,50));		// set address
+      //vram_write("YOU WIN",7);
+    }
+    if(health ==0)
+    {
+      break;
     }
     
     //cur_oam = oam_meta_spr(232, y, cur_oam, Door);
