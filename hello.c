@@ -3,6 +3,10 @@
 
 #include "winner.h"
 
+#include "game_over.h"
+
+#include "winner.h"
+
 /*
 A simple "hello world" example.
 Set the screen background color and palette colors.
