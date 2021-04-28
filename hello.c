@@ -8,6 +8,8 @@ Finally, turn on the PPU to display video.
 #define NES_MIRRORING 1 
 #include "neslib.h"
 #include "vrambuf.h"
+#include "apu.h"
+//#link "apu.c"
 //#link "vrambuf.c"
 #define TILE 0xd8
 #define TILE_D 0xc4
@@ -128,9 +130,9 @@ pal_all(PALETTE);
   // write text to name table
   vram_adr(NTADR_A(1,1));		// set address
   vram_write("Health:",7);
-  for(i = 0; i <= health; i++)
+  for(i = 1; i <= health; i++)
   {
-  vram_adr(NTADR_A(i+1,2));		// set address
+  vram_adr(NTADR_A(i,2));		// set address
   vram_put(0x15);
   }
   vram_adr(NTADR_A(0,4));		// set address
@@ -150,6 +152,7 @@ pal_all(PALETTE);
     char pad_result = pad_poll(0);
     
     cur_oam = oam_spr(1, 22,0xA0,0x00, cur_oam);
+    //cur_oam = oam_meta_spr(450, 115, cur_oam, Door);
     //oam_spr(x,y,0x19,0x0,cur_oam);
     if(pad_result & 0x40)
     {
@@ -199,6 +202,7 @@ pal_all(PALETTE);
       	pal_bright(4);
       if( x > 232)
         x = 232;
+      	
     	cur_oam = oam_meta_spr(x, play_y, cur_oam, metaspriteR);
       	cur_oam = oam_meta_spr(x, play_y, cur_oam, Door);
     }
@@ -226,6 +230,7 @@ pal_all(PALETTE);
         }
       if(enem_x- cam_x >= 0&& enem_x- cam_x<256){
     	cur_oam = oam_meta_spr(enem_x- cam_x, enem_y, cur_oam, metaspriteR);
+        cur_oam = oam_meta_spr(480-cam_x, 115, cur_oam, Door);
       }
     }
     if(enem_dir == -1){
@@ -235,7 +240,13 @@ pal_all(PALETTE);
         }
       	if(enem_x- cam_x >= 0&& enem_x- cam_x<256){
     	cur_oam = oam_meta_spr(enem_x - cam_x, enem_y, cur_oam, metaspriteL);
+          cur_oam = oam_meta_spr(480-cam_x, 115, cur_oam, Door);
         }
+    }
+    if(play_y == 115 && x==480-cam_x)
+    {
+      vram_adr(NTADR_A(50,50));		// set address
+      vram_write("YOU WIN",7);
     }
     
     //cur_oam = oam_meta_spr(232, y, cur_oam, Door);
@@ -246,4 +257,5 @@ pal_all(PALETTE);
     //ppu_wait_frame();
     //vrambuf_flush();
   }
+
 }
