@@ -1,4 +1,8 @@
 
+#include "game_over.h"
+
+#include "winner.h"
+
 /*
 A simple "hello world" example.
 Set the screen background color and palette colors.
@@ -9,7 +13,7 @@ Finally, turn on the PPU to display video.
 #include "neslib.h"
 #include "vrambuf.h"
 #include "apu.h"
-#include "title.h"
+#include "new_title.h"
 //#link "apu.c"
 //#link "vrambuf.c"
 #define FP_BITS  4
