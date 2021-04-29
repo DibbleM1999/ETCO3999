@@ -555,7 +555,7 @@ pal_all(PALETTE);
       APU_ENABLE(ENABLE_PULSE0);
       APU_PULSE_DECAY(channel, period, duty, fade_time, length);
       vram_adr(NTADR_A(health,2));		// set address
-      vram_put(0x15);
+      vram_put(0x00);
       health--;
     }
     if(play_y == 115 && x==480-cam_x)
