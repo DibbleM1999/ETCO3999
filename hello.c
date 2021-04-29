@@ -3,9 +3,6 @@
 
 #include "winner.h"
 
-#include "game_over.h"
-
-#include "winner.h"
 
 /*
 A simple "hello world" example.
@@ -20,8 +17,8 @@ Finally, turn on the PPU to display video.
 #include "new_title.h"
 //#link "apu.c"
 //#link "vrambuf.c"
+//#link "famitone2.s"
 #define FP_BITS  4
-#include "title.h"
 
 #define TILE 0xd8
 #define TILE_D 0xc4
@@ -171,6 +168,7 @@ void pal_fade_to(unsigned to)
 
 void title_screen(void)
 {
+  ppu_off();
   scroll(-8,240);//title is aligned to the color attributes, so shift it a bit to the right
 
   vram_adr(NAMETABLE_A);
@@ -193,6 +191,8 @@ void title_screen(void)
   while(1)
   {
     ppu_wait_frame();
+    
+    ppu_on_all();
 
     scroll(-8,iy>>FP_BITS);
 
@@ -405,7 +405,6 @@ void start_music(const byte* music) {
 // main function, run after console reset
 void game_loop(void) {
  //apu_init();
-byte* music_ptr = 0;
 int i;
 int health = 5;
 int x = 1;
@@ -421,7 +420,7 @@ int enem_dir = 1;
 int period = 2000; // pitch, high value = lower pitch (0-2047)
 unsigned char duty = DUTY_25; // or DUTY_12, DUTY_50, DUTY_75
 unsigned char fade_time = 15; // fade out: 0=fast, 15=slow (in 240Hz frames?)
-unsigned char length = 30; // time of sound (0-31)
+unsigned char length = 2; // time of sound (0-31)
 
 pal_all(PALETTE);
 
@@ -549,7 +548,7 @@ pal_all(PALETTE);
           cur_oam = oam_meta_spr(480-cam_x, 115, cur_oam, Door);
         }
     }
-    if(play_y == 115 && x==enem_x- cam_x)
+    if(play_y == 110 && x==enem_x- cam_x)
     {
       
       APU_ENABLE(ENABLE_PULSE0);
@@ -571,12 +570,7 @@ pal_all(PALETTE);
     
     //cur_oam = oam_meta_spr(232, y, cur_oam, Door);
     //cam_x++;
-    if (!music_ptr) 
-    {
-      start_music(music1);
-    }
-    waitvsync();
-    play_music();
+    
     oam_hide_rest(cur_oam);
     split(cam_x,cam_y);
     //scroll(cam_x,cam_y);
@@ -587,8 +581,16 @@ pal_all(PALETTE);
 }
 void main(void)
 {
+  apu_init();
+  music_ptr = 0;
   while(1)
   {
+    if (!music_ptr) 
+    {
+      start_music(music1);
+    }
+    waitvsync();
+    play_music();
     title_screen();
     game_loop();
     if(health == 0)
