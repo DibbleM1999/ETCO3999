@@ -146,7 +146,6 @@ static int iy,dy;
 static unsigned char bright;
 static unsigned char frame_cnt;
 static unsigned char k;
-int health = 5;
 void pal_fade_to(unsigned to)
 {
   //if(!to) music_stop();
@@ -168,13 +167,13 @@ void pal_fade_to(unsigned to)
 
 void title_screen(void)
 {
-  ppu_off();
+  //ppu_off();
   scroll(-8,240);//title is aligned to the color attributes, so shift it a bit to the right
 
-  vram_adr(NAMETABLE_A);
-  vram_unrle(title);
+  vram_adr(NTADR_A(0,0));
+  vram_write(title, 1024);
 
-  vram_adr(NAMETABLE_C);//clear second nametable, as it is visible in the jumping effect
+  vram_adr(NTADR_B(0,0));//clear second nametable, as it is visible in the jumping effect
   vram_fill(0,1024);
 
   pal_bg(palTitle);
@@ -192,7 +191,7 @@ void title_screen(void)
   {
     ppu_wait_frame();
     
-    ppu_on_all();
+    //ppu_on_all();
 
     scroll(-8,iy>>FP_BITS);
 
@@ -235,10 +234,10 @@ void game_over_screen(void)
 {
   scroll(-8,240);//title is aligned to the color attributes, so shift it a bit to the right
 
-  vram_adr(NAMETABLE_A);
-  vram_unrle(game_over);
+  vram_adr(NTADR_A(0,0));
+  vram_write(game_over,1024);
 
-  vram_adr(NAMETABLE_C);//clear second nametable, as it is visible in the jumping effect
+  vram_adr(NTADR_B(0,0));//clear second nametable, as it is visible in the jumping effect
   vram_fill(0,1024);
 
   pal_bg(palTitle);
@@ -297,10 +296,10 @@ void winner_screen(void)
 {
   scroll(-8,240);//title is aligned to the color attributes, so shift it a bit to the right
 
-  vram_adr(NAMETABLE_A);
-  vram_unrle(win_screen);
+  vram_adr(NTADR_A(0,0));
+  vram_write(win_screen,1024);
 
-  vram_adr(NAMETABLE_C);//clear second nametable, as it is visible in the jumping effect
+  vram_adr(NTADR_B(0,0));//clear second nametable, as it is visible in the jumping effect
   vram_fill(0,1024);
 
   pal_bg(palTitle);
@@ -403,7 +402,7 @@ void start_music(const byte* music) {
   cur_duration = 0;
 }
 // main function, run after console reset
-void game_loop(void) {
+int game_loop(void) {
  //apu_init();
 int i;
 int health = 5;
@@ -416,7 +415,8 @@ int cam_y = 0;
 int enem_x = 400;
 int enem_y = 110;
 int enem_dir = 1;
- unsigned char channel = PULSE_CH0; // or PULSE_CH1
+int game_over_int = 0;
+unsigned char channel = PULSE_CH0; // or PULSE_CH1
 int period = 2000; // pitch, high value = lower pitch (0-2047)
 unsigned char duty = DUTY_25; // or DUTY_12, DUTY_50, DUTY_75
 unsigned char fade_time = 15; // fade out: 0=fast, 15=slow (in 240Hz frames?)
@@ -548,6 +548,12 @@ pal_all(PALETTE);
           cur_oam = oam_meta_spr(480-cam_x, 115, cur_oam, Door);
         }
     }
+    if (!music_ptr) 
+    {
+      start_music(music1);
+    }
+    waitvsync();
+    play_music();
     if(play_y == 110 && x==enem_x- cam_x)
     {
       
@@ -561,11 +567,16 @@ pal_all(PALETTE);
     {
       //vram_adr(NTADR_A(50,50));		// set address
       //vram_write("YOU WIN",7);
-      break;
+      game_over_int = 
+        1;
+      ppu_off();
+      return game_over_int;
     }
     if(health ==0)
     {
-      break;
+      game_over_int =0;
+      ppu_off();
+      return game_over_int;
     }
     
     //cur_oam = oam_meta_spr(232, y, cur_oam, Door);
@@ -585,15 +596,10 @@ void main(void)
   music_ptr = 0;
   while(1)
   {
-    if (!music_ptr) 
-    {
-      start_music(music1);
-    }
-    waitvsync();
-    play_music();
+    
     title_screen();
-    game_loop();
-    if(health == 0)
+    //game_loop();
+    if(game_loop() == 0)
     {
       game_over_screen();
     }
